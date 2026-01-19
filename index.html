@@ -4,83 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Water Pump</title>
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-
-  <style>
-    /* style.css */
-
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f0f8ff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff;
-      border-radius: 15px;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      width: 320px;
-      text-align: center;
-    }
-
-    .title {
-      font-size: 24px;
-      color: #007acc;
-    }
-
-    .status-section {
-      margin-top: 20px;
-    }
-
-    .status {
-      margin: 15px 0;
-      font-size: 18px;
-      color: #333;
-    }
-
-    .status label {
-      display: block;
-      font-weight: bold;
-    }
-
-    #moisture {
-      color: #9b59b6;
-    }
-
-    #pump-status {
-      color: #2ecc71;
-    }
-
-    #mode-status {
-      color: #3498db;
-    }
-
-    .toggle {
-      margin-top: 20px;
-    }
-
-    #mode-toggle {
-      width: 60px;
-      height: 30px;
-      background: linear-gradient(to right, #3498db, #2ecc71);
-      border-radius: 15px;
-      position: relative;
-      transition: 0.3s;
-    }
-
-    #mode-toggle:checked {
-      background: linear-gradient(to right, #2ecc71, #3498db);
-    }
-  </style>
-
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
@@ -106,54 +32,6 @@
     <button id="connectButton">Connect to Firebase</button>
   </div>
 
-  <script>
-    // app.js
-
-    document.getElementById("connectButton").addEventListener("click", function () {
-      const apiKey = "7kb2i7jREFjgYa4HsWEU4P4BtWv9PGi50l2JTh2c";
-      const databaseURL = "https://it-1-b7d46-default-rtdb.firebaseio.com";
-
-      // Firebase Configuration
-      const firebaseConfig = {
-        apiKey: apiKey,
-        authDomain: `${databaseURL.replace("https://", "").replace(".firebaseio.com", "")}.firebaseapp.com`,
-        databaseURL: databaseURL,
-        projectId: "it-1-b7d46",
-        storageBucket: `${databaseURL.replace("https://", "").replace(".firebaseio.com", "")}.appspot.com`,
-        messagingSenderId: "525174733532",
-        appId: "1:525174733532:web:9e3465c9531efaf8b998c7"
-      };
-
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
-
-      // Fetch data from Firebase
-      const moistureRef = database.ref("/moisture");
-      moistureRef.on("value", (snapshot) => {
-        const moisture = snapshot.val();
-        document.getElementById("moisture").innerText = moisture;
-      });
-
-      const pumpRef = database.ref("/pump");
-      pumpRef.on("value", (snapshot) => {
-        const pumpStatus = snapshot.val() ? "ON" : "OFF";
-        document.getElementById("pump-status").innerText = pumpStatus;
-      });
-
-      const modeRef = database.ref("/mode");
-      modeRef.on("value", (snapshot) => {
-        const modeStatus = snapshot.val() === "auto" ? "Auto" : "Manual";
-        document.getElementById("mode-status").innerText = modeStatus;
-      });
-
-      // Toggle mode between Auto and Manual
-      document.getElementById("mode-toggle").addEventListener("change", function () {
-        const newMode = this.checked ? "auto" : "manual";
-        modeRef.set(newMode);
-      });
-    });
-  </script>
-
+  <script src="app.js"></script> <!-- เชื่อมโยงไฟล์ JavaScript ที่ถูกต้อง -->
 </body>
 </html>
