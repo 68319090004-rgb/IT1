@@ -32,10 +32,10 @@
     <button id="connectButton">Connect to Firebase</button>
   </div>
 
+  <!-- เชื่อมโยงกับไฟล์ app.js -->
   <script src="app.js"></script>
 </body>
 </html>
-
 /* style.css */
 
 body {
@@ -106,9 +106,7 @@ body {
 #mode-toggle:checked {
   background: linear-gradient(to right, #2ecc71, #3498db);
 }
-
-    // เมื่อกดปุ่ม Connect
-   // app.js
+// app.js
 
 document.getElementById("connectButton").addEventListener("click", function () {
   const apiKey = "7kb2i7jREFjgYa4HsWEU4P4BtWv9PGi50l2JTh2c";
@@ -154,4 +152,3 @@ document.getElementById("connectButton").addEventListener("click", function () {
     modeRef.set(newMode);
   });
 });
-
