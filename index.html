@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control System</title>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+</head>
+<body>
+  <h1>Soil Moisture Control</h1>
+
+  <p>Soil Moisture: <span id="moisture">Loading...</span></p>
+  <p>Pump Status: <span id="pump-status">Loading...</span></p>
+
+  <button id="toggle-pump">Toggle Pump</button>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "your-api-key",
+      authDomain: "your-project-id.firebaseapp.com",
+      databaseURL: "https://your-project-id.firebaseio.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project-id.appspot.com",
+      messagingSenderId: "your-sender-id",
+      appId: "your-app-id"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const moistureElement = document.getElementById('moisture');
+    const pumpStatusElement = document.getElementById('pump-status');
+    const togglePumpButton = document.getElementById('toggle-pump');
+
+    // Monitor changes in moisture level and pump status
+    const moistureRef = database.ref('/moisture');
+    moistureRef.on('value', (snapshot) => {
+      const moisture = snapshot.val();
+      moistureElement.innerText = moisture + "%";
+    });
+
+    const pumpRef = database.ref('/pump');
+    pumpRef.on('value', (snapshot) => {
+      const pumpStatus = snapshot.val() ? "ON" : "OFF";
+      pumpStatusElement.innerText = pumpStatus;
+    });
+
+    // Toggle pump when button is clicked
+    togglePumpButton.addEventListener('click', () => {
+      pumpRef.once('value', (snapshot) => {
+        const currentStatus = snapshot.val();
+        pumpRef.set(!currentStatus); // Toggle the pump status
+      });
+    });
+  </script>
+</body>
+</html>
