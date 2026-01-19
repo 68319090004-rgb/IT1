@@ -3,57 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control System</title>
+  <title>Soil Moisture Control</title>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
 </head>
 <body>
   <h1>Soil Moisture Control</h1>
 
-  <p>Soil Moisture: <span id="moisture">Loading...</span></p>
-  <p>Pump Status: <span id="pump-status">Loading...</span></p>
+  <!-- ฟอร์มกรอก API Key และ URL ของ Firebase Realtime Database -->
+  <div>
+    <label for="apiKey">API Key:</label>
+    <input type="text" id="apiKey" placeholder="Enter your Firebase API Key" value="7kb2i7jREFjgYa4HsWEU4P4BtWv9PGi50l2JTh2c">
+  </div>
+  
+  <div>
+    <label for="databaseURL">Firebase Realtime Database URL:</label>
+    <input type="text" id="databaseURL" placeholder="Enter Firebase Database URL" value="https://it-1-b7d46-default-rtdb.firebaseio.com">
+  </div>
+
+  <button id="connectButton">Connect to Firebase</button>
+
+  <h2>Current Soil Moisture: <span id="moisture">Loading...</span></h2>
+  <h2>Pump Status: <span id="pump-status">Loading...</span></h2>
 
   <button id="toggle-pump">Toggle Pump</button>
 
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "your-api-key",
-      authDomain: "your-project-id.firebaseapp.com",
-      databaseURL: "https://your-project-id.firebaseio.com",
-      projectId: "your-project-id",
-      storageBucket: "your-project-id.appspot.com",
-      messagingSenderId: "your-sender-id",
-      appId: "your-app-id"
-    };
+    // เมื่อกดปุ่ม Connect
+    document.getElementById("connectButton").addEventListener("click", function() {
+      const apiKey = document.getElementById("apiKey").value;
+      const databaseURL = document.getElementById("databaseURL").value;
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+      if (apiKey && databaseURL) {
+        // ตั้งค่าการเชื่อมต่อ Firebase
+        const firebaseConfig = {
+          apiKey: apiKey,
+          authDomain: `${databaseURL.replace("https://", "").replace(".firebaseio.com", "")}.firebaseapp.com`,
+          databaseURL: databaseURL,
+          projectId: "it-1-b7d46",  // ใช้ Project ID ของคุณ
+          storageBucket: `${databaseURL.replace("https://", "").replace(".firebaseio.com", "")}.appspot.com`,
+          messagingSenderId: "525174733532",  // Project Number ของคุณ
+          appId: "1:525174733532:web:9e3465c9531efaf8b998c7"  // ใส่ App ID ของคุณ
+        };
 
-    const moistureElement = document.getElementById('moisture');
-    const pumpStatusElement = document.getElementById('pump-status');
-    const togglePumpButton = document.getElementById('toggle-pump');
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-    // Monitor changes in moisture level and pump status
-    const moistureRef = database.ref('/moisture');
-    moistureRef.on('value', (snapshot) => {
-      const moisture = snapshot.val();
-      moistureElement.innerText = moisture + "%";
-    });
+        // เริ่มฟังก์ชันเพื่อดึงค่าความชื้นจาก Firebase
+        const moistureRef = database.ref('/moisture');
+        moistureRef.on('value', (snapshot) => {
+          const moisture = snapshot.val();
+          document.getElementById("moisture").innerText = moisture + "%";
+        });
 
-    const pumpRef = database.ref('/pump');
-    pumpRef.on('value', (snapshot) => {
-      const pumpStatus = snapshot.val() ? "ON" : "OFF";
-      pumpStatusElement.innerText = pumpStatus;
-    });
+        // เริ่มฟังก์ชันเพื่อดึงสถานะปั๊มจาก Firebase
+        const pumpRef = database.ref('/pump');
+        pumpRef.on('value', (snapshot) => {
+          const pumpStatus = snapshot.val() ? "ON" : "OFF";
+          document.getElementById("pump-status").innerText = pumpStatus;
+        });
 
-    // Toggle pump when button is clicked
-    togglePumpButton.addEventListener('click', () => {
-      pumpRef.once('value', (snapshot) => {
-        const currentStatus = snapshot.val();
-        pumpRef.set(!currentStatus); // Toggle the pump status
-      });
+        // เปลี่ยนสถานะปั๊มเมื่อกดปุ่ม
+        document.getElementById("toggle-pump").addEventListener("click", function() {
+          pumpRef.once('value', (snapshot) => {
+            const currentStatus = snapshot.val();
+            pumpRef.set(!currentStatus);  // เปลี่ยนสถานะปั๊ม
+          });
+        });
+      } else {
+        alert("Please enter both API Key and Firebase Realtime Database URL.");
+      }
     });
   </script>
 </body>
