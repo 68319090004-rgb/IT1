@@ -3,120 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Water Pump - ระบบรดน้ำอัจฉริยะ</title>
-    
+    <title>Smart Farm Dashboard - Full System</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f3f7fb;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 350px;
-            text-align: center;
-        }
-
-        .title {
-            font-size: 24px;
-            color: #007acc;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .status-card {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-
-        .moisture-value {
-            font-size: 50px;
-            font-weight: bold;
-            color: #9b59b6;
-            margin: 10px 0;
-        }
-
-        #pump-badge {
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            color: white;
-            background-color: #ccc;
-            transition: 0.5s;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .btn-on { background-color: #2ecc71; color: white; }
-        .btn-off { background-color: #e74c3c; color: white; }
-        button:hover { opacity: 0.8; }
-
-        .mode-section {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
+        :root { --primary: #2980b9; --success: #27ae60; --danger: #c0392b; --dark: #2c3e50; --light: #ecf0f1; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f3f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; }
+        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; text-align: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .label { font-size: 0.9rem; color: #7f8c8d; }
+        .value { font-size: 1.8rem; font-weight: bold; color: var(--dark); }
+        
+        /* สไตล์ตามสถานะ */
+        #light-card { transition: 0.5s; color: white; }
+        .pump-on { background-color: var(--success) !important; color: white; }
+        .pump-off { background-color: var(--danger) !important; color: white; }
+        
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Kanit'; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-mode { background: var(--primary); color: white; margin-top: 10px; }
+        .btn-manual { background: #95a5a6; color: white; margin-top: 5px; }
+        .active-mode { border: 3px solid var(--dark); transform: scale(1.02); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="title">ระบบรดน้ำอัตโนมัติ 🌿</div>
+    <h2 style="text-align: center; color: var(--dark);">🌿 ระบบฟาร์มอัจฉริยะ</h2>
 
-    <div class="status-card">
-        <div>ความชื้นในดิน</div>
-        <div class="moisture-value"><span id="moisture">--</span>%</div>
-        <div id="pump-badge">
-            สถานะ: <span id="p-status">รอข้อมูล...</span>
+    <div class="grid">
+        <div class="card">
+            <div class="label">ความชื้นในดิน</div>
+            <div class="value"><span id="moisture">--</span>%</div>
+        </div>
+        <div id="light-card" class="card" style="background-color: var(--primary);">
+            <div id="light-icon" style="font-size: 1.5rem;">☀️</div>
+            <div id="light-text" style="font-size: 1rem;">กลางวัน</div>
         </div>
     </div>
 
-    <div class="mode-section">
-        <p>โหมดการทำงาน: <strong id="mode-text">กำลังโหลด...</strong></p>
-        <div class="btn-group">
-            <button class="btn-on" onclick="setMode('auto')">โหมดอัตโนมัติ</button>
-            <button class="btn-off" onclick="setMode('manual')">โหมดกำหนดเอง</button>
+    <div class="card" style="background: #e1f5fe;">
+        <div style="font-weight: bold; color: var(--primary); margin-bottom: 10px;">การใช้น้ำ</div>
+        <div class="grid">
+            <div>
+                <div class="label">อัตราการไหล</div>
+                <div style="font-size: 1.2rem; font-weight: bold;"><span id="flowRate">0.0</span> L/min</div>
+            </div>
+            <div>
+                <div class="label">รวมทั้งหมด</div>
+                <div style="font-size: 1.2rem; font-weight: bold;"><span id="totalVolume">0.0</span> L</div>
+            </div>
         </div>
     </div>
 
-    <div id="manual-controls" style="margin-top: 15px; display: none;">
-        <p>สั่งงานด้วยตัวเอง:</p>
-        <div class="btn-group">
-            <button class="btn-on" onclick="controlPump(true)">เปิดปั๊ม</button>
-            <button class="btn-off" onclick="controlPump(false)">ปิดปั๊ม</button>
+    <div id="pump-badge" class="card pump-off">
+        <div style="font-size: 1.2rem;">สถานะปั๊ม: <span id="p-status">ปิดอยู่</span></div>
+    </div>
+
+    <div class="card">
+        <div class="label">โหมดการทำงาน: <span id="mode-text" style="font-weight: bold; color: var(--primary);">--</span></div>
+        <div class="grid">
+            <button id="btn-auto" class="btn btn-mode" onclick="setMode('auto')">AUTO (40% + มืด)</button>
+            <button id="btn-manual" class="btn btn-mode" onclick="setMode('manual')">MANUAL</button>
+        </div>
+        
+        <div id="manual-controls" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <div class="grid">
+                <button class="btn pump-on" onclick="controlPump(true)">เปิดปั๊ม</button>
+                <button class="btn pump-off" onclick="controlPump(false)">ปิดปั๊ม</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Firebase Configuration (ใช้ค่าที่คุณให้มา)
     const firebaseConfig = {
         apiKey: "7kb2i7jREFjgYa4HsWEU4P4BtWv9PGi50l2JTh2c",
         authDomain: "it-1-b7d46.firebaseapp.com",
@@ -127,70 +89,54 @@
         appId: "1:525174733532:web:9e3465c9531efaf8b998c7"
     };
 
-    // 2. Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let currentMode = 'auto';
+    // ติดตามข้อมูลทั้งหมด
+    db.ref().on("value", (snapshot) => {
+        const data = snapshot.val();
+        if(!data) return;
 
-    // 3. ติดตามค่าความชื้น
-    db.ref("moisture").on("value", (snapshot) => {
-        const val = snapshot.val();
-        document.getElementById("moisture").innerText = val !== null ? val : "--";
+        // ความชื้น
+        document.getElementById("moisture").innerText = data.moisture || 0;
         
-        // ถ้าเป็นโหมด Auto ให้ตัดสินใจเปิด-ปิดปั๊มที่ 40%
-        if (currentMode === 'auto' && val !== null) {
-            if (val < 40) {
-                updatePumpStatus(true);
-            } else {
-                updatePumpStatus(false);
-            }
-        }
-    });
-
-    // 4. ติดตามสถานะปั๊ม (เพื่อเปลี่ยนสี Badge)
-    db.ref("pumpStatus").on("value", (snapshot) => {
-        const isRunning = snapshot.val();
-        const statusText = document.getElementById("p-status");
-        const statusBadge = document.getElementById("pump-badge");
-
-        if (isRunning) {
-            statusText.innerText = "ปั้มกำลังทำงาน";
-            statusBadge.style.backgroundColor = "#2e7d32"; // เขียว
+        // แสง LDR
+        const lCard = document.getElementById("light-card");
+        if(data.isDark) {
+            lCard.style.backgroundColor = "#2c3e50";
+            document.getElementById("light-icon").innerText = "🌙";
+            document.getElementById("light-text").innerText = "กลางคืน (มืด)";
         } else {
-            statusText.innerText = "ปั้มไม่ทำงาน";
-            statusBadge.style.backgroundColor = "#d32f2f"; // แดง
+            lCard.style.backgroundColor = "#f1c40f";
+            document.getElementById("light-icon").innerText = "☀️";
+            document.getElementById("light-text").innerText = "กลางวัน (สว่าง)";
         }
-    });
 
-    // 5. ติดตามโหมดการทำงาน
-    db.ref("mode").on("value", (snapshot) => {
-        currentMode = snapshot.val() || 'auto';
-        document.getElementById("mode-text").innerText = currentMode === 'auto' ? "อัตโนมัติ (40%)" : "กำหนดเอง (Manual)";
-        
-        // แสดงปุ่มกด Manual เฉพาะเมื่ออยู่ในโหมด manual
-        document.getElementById("manual-controls").style.display = currentMode === 'manual' ? "block" : "none";
-    });
+        // Water Flow
+        document.getElementById("flowRate").innerText = data.flowRate ? data.flowRate.toFixed(2) : "0.0";
+        document.getElementById("totalVolume").innerText = data.totalVolume ? data.totalVolume.toFixed(2) : "0.0";
 
-    // ฟังก์ชันสั่งเปลี่ยนโหมด
-    function setMode(newMode) {
-        db.ref("mode").set(newMode);
-    }
-
-    // ฟังก์ชันสั่งปั๊ม (Manual)
-    function controlPump(status) {
-        if (currentMode === 'manual') {
-            updatePumpStatus(status);
+        // สถานะปั๊ม
+        const pBadge = document.getElementById("pump-badge");
+        const pStatus = document.getElementById("p-status");
+        if(data.pumpStatus) {
+            pBadge.className = "card pump-on";
+            pStatus.innerText = "กำลังทำงาน...";
         } else {
-            alert("กรุณาเปลี่ยนเป็นโหมดกำหนดเองก่อน");
+            pBadge.className = "card pump-off";
+            pStatus.innerText = "หยุดทำงาน";
         }
-    }
 
-    // ฟังก์ชันอัปเดตค่าลงฐานข้อมูล
-    function updatePumpStatus(status) {
-        db.ref("/").update({ pumpStatus: status });
-    }
+        // โหมด
+        const mode = data.mode || "auto";
+        document.getElementById("mode-text").innerText = mode === "auto" ? "อัตโนมัติ" : "ควบคุมเอง";
+        document.getElementById("manual-controls").style.display = mode === "manual" ? "block" : "none";
+        document.getElementById("btn-auto").className = mode === "auto" ? "btn btn-mode active-mode" : "btn btn-mode";
+        document.getElementById("btn-manual").className = mode === "manual" ? "btn btn-mode active-mode" : "btn btn-mode";
+    });
+
+    function setMode(m) { db.ref("mode").set(m); }
+    function controlPump(s) { db.ref("pumpStatus").set(s); }
 </script>
-
 </body>
 </html>
