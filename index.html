@@ -118,30 +118,56 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="title">Smart Water Pump</h1>
-    <div class="status-section">
-      <div class="status">
-        <label>ค่าความชื้น</label>
-        <span id="moisture">Loading...</span>%
-      </div>
-      <div class="status">
-        <label>สถานะปั๊ม</label>
-        <span id="pump-status">Loading...</span>
-      </div>
-      <div class="status">
-        <label>โหมด</label>
-        <span id="mode-status">Auto</span>
-      </div>
+  <div class="status-card">
+    <div class="moisture-label">ความชื้นในดิน</div>
+    <div class="moisture-value"><span id="moisture">--</span>%</div>
+    
+    <div id="pump-badge" style="padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; background-color: #eee;">
+        สถานะ: <span id="p-status">รอข้อมูล...</span>
     </div>
-    <div class="toggle">
-      <label for="mode-toggle">โหมด Auto</label>
-      <input type="checkbox" id="mode-toggle" />
-    </div>
-    <button id="connectButton">Connect to Firebase</button>
-  </div>
+</div>
 
-  <script>
+<script>
+    // ... (firebaseConfig ของคุณ) ...
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ดึงค่าความชื้นและตัดสินใจสถานะปั๊ม
+    db.ref("moisture").on("value", (snapshot) => {
+        const val = snapshot.val();
+        const moistureElement = document.getElementById("moisture");
+        const statusText = document.getElementById("p-status");
+        const statusBadge = document.getElementById("pump-badge");
+
+        moistureElement.innerText = val !== null ? val : "--";
+
+        if (val !== null) {
+            if (val < 40) {
+                // เงื่อนไข: ต่ำกว่า 40%
+                statusText.innerText = "ปั้มกำลังทำงาน";
+                statusText.style.color = "#ffffff";
+                statusBadge.style.backgroundColor = "#2e7d32"; // สีเขียว
+                
+                // สั่งเปิดปั๊มในฐานข้อมูลโดยอัตโนมัติ (Optional)
+                db.ref("/").update({ pumpStatus: true });
+            } else {
+                // เงื่อนไข: 40% ขึ้นไป
+                statusText.innerText = "ปั้มไม่ทำงาน";
+                statusText.style.color = "#ffffff";
+                statusBadge.style.backgroundColor = "#d32f2f"; // สีแดง
+                
+                // สั่งปิดปั๊มในฐานข้อมูลโดยอัตโนมัติ (Optional)
+                db.ref("/").update({ pumpStatus: false });
+            }
+        }
+    });
+
+    // ฟังก์ชันปุ่มกด Manual (เผื่ออยากกดเอง)
+    function controlPump(status) {
+        db.ref("/").update({ pumpStatus: status });
+    }
+</script>
     // app.js
 
     document.getElementById("connectButton").addEventListener("click", function () {
