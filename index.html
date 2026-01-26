@@ -3,82 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Farm Dashboard - Full System</title>
+    <title>Smart Farm Dashboard - Pro Version</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary: #2980b9; --success: #27ae60; --danger: #c0392b; --dark: #2c3e50; --light: #ecf0f1; }
-        body { font-family: 'Kanit', sans-serif; background-color: #f0f3f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; }
-        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; text-align: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .label { font-size: 0.9rem; color: #7f8c8d; }
-        .value { font-size: 1.8rem; font-weight: bold; color: var(--dark); }
-        
-        /* สไตล์ตามสถานะ */
-        #light-card { transition: 0.5s; color: white; }
-        .pump-on { background-color: var(--success) !important; color: white; }
-        .pump-off { background-color: var(--danger) !important; color: white; }
-        
-        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Kanit'; font-weight: bold; width: 100%; transition: 0.3s; }
-        .btn-mode { background: var(--primary); color: white; margin-top: 10px; }
-        .btn-manual { background: #95a5a6; color: white; margin-top: 5px; }
-        .active-mode { border: 3px solid var(--dark); transform: scale(1.02); }
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .main-title {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .label { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 5px; }
+        .value { font-size: 2rem; font-weight: 600; color: var(--dark); }
+        .unit { font-size: 1rem; color: #95a5a6; }
+
+        /* LDR Light Status Card */
+        #light-card { color: white; transition: 0.8s; }
+        .day-mode { background-color: var(--warning) !important; color: #333 !important; }
+        .night-mode { background-color: var(--dark) !important; color: white !important; }
+
+        /* Pump Status */
+        .pump-card { border-bottom: 8px solid #ddd; }
+        .status-on { border-color: var(--success); }
+        .status-off { border-color: var(--danger); }
+        .status-text { font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
+
+        /* Warning Banner */
+        #error-banner {
+            background-color: var(--danger);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: none;
+            animation: blink 1s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Controls */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Kanit';
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-mode { background: #eee; color: #777; }
+        .btn-mode.active { background: var(--primary); color: white; }
+        .btn-pump-on { background: var(--success); color: white; }
+        .btn-pump-off { background: var(--danger); color: white; }
+        .btn:active { transform: scale(0.95); }
+
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align: center; color: var(--dark);">🌿 ระบบฟาร์มอัจฉริยะ</h2>
+    <h2 class="main-title">Smart Farm Pro 🌿</h2>
+
+    <div id="error-banner">
+        ⚠️ ตรวจพบน้ำไม่ไหลเกิน 1 นาที! <br>
+        <small>ระบบหยุดปั๊มเพื่อป้องกันความเสียหาย</small>
+    </div>
 
     <div class="grid">
         <div class="card">
             <div class="label">ความชื้นในดิน</div>
-            <div class="value"><span id="moisture">--</span>%</div>
+            <div class="value"><span id="moisture">--</span><span class="unit">%</span></div>
         </div>
-        <div id="light-card" class="card" style="background-color: var(--primary);">
-            <div id="light-icon" style="font-size: 1.5rem;">☀️</div>
-            <div id="light-text" style="font-size: 1rem;">กลางวัน</div>
+        <div id="light-card" class="card">
+            <div id="light-icon" style="font-size: 2rem;">☀️</div>
+            <div id="light-text" style="font-weight: bold;">กำลังโหลด...</div>
         </div>
     </div>
 
     <div class="card" style="background: #e1f5fe;">
-        <div style="font-weight: bold; color: var(--primary); margin-bottom: 10px;">การใช้น้ำ</div>
-        <div class="grid">
+        <div class="label" style="color: var(--primary); font-weight: bold;">การไหลของน้ำ</div>
+        <div class="grid" style="margin-top: 10px;">
             <div>
-                <div class="label">อัตราการไหล</div>
-                <div style="font-size: 1.2rem; font-weight: bold;"><span id="flowRate">0.0</span> L/min</div>
+                <div style="font-size: 1.2rem; font-weight: bold;"><span id="flowRate">0.0</span></div>
+                <div class="label">L/min</div>
             </div>
             <div>
-                <div class="label">รวมทั้งหมด</div>
-                <div style="font-size: 1.2rem; font-weight: bold;"><span id="totalVolume">0.0</span> L</div>
+                <div style="font-size: 1.2rem; font-weight: bold;"><span id="totalVolume">0.0</span></div>
+                <div class="label">รวม (Liters)</div>
             </div>
         </div>
     </div>
 
-    <div id="pump-badge" class="card pump-off">
-        <div style="font-size: 1.2rem;">สถานะปั๊ม: <span id="p-status">ปิดอยู่</span></div>
+    <div id="pump-card" class="card pump-card status-off">
+        <div class="label">สถานะการทำงานของปั๊ม</div>
+        <div id="p-status" class="status-text" style="color: var(--danger);">ปิดการทำงาน</div>
     </div>
 
     <div class="card">
-        <div class="label">โหมดการทำงาน: <span id="mode-text" style="font-weight: bold; color: var(--primary);">--</span></div>
-        <div class="grid">
-            <button id="btn-auto" class="btn btn-mode" onclick="setMode('auto')">AUTO (40% + มืด)</button>
+        <div class="label">เลือกโหมดการทำงาน</div>
+        <div class="btn-group">
+            <button id="btn-auto" class="btn btn-mode" onclick="setMode('auto')">AUTO (40%)</button>
             <button id="btn-manual" class="btn btn-mode" onclick="setMode('manual')">MANUAL</button>
         </div>
-        
-        <div id="manual-controls" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-            <div class="grid">
-                <button class="btn pump-on" onclick="controlPump(true)">เปิดปั๊ม</button>
-                <button class="btn pump-off" onclick="controlPump(false)">ปิดปั๊ม</button>
+
+        <div id="manual-controls" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <div class="label">สั่งงานปั๊มด้วยตัวเอง</div>
+            <div class="btn-group">
+                <button class="btn btn-pump-on" onclick="controlPump(true)">เปิดปั๊ม</button>
+                <button class="btn btn-pump-off" onclick="controlPump(false)">ปิดปั๊ม</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // --- 1. Firebase Configuration ---
     const firebaseConfig = {
         apiKey: "7kb2i7jREFjgYa4HsWEU4P4BtWv9PGi50l2JTh2c",
         authDomain: "it-1-b7d46.firebaseapp.com",
@@ -92,51 +178,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ติดตามข้อมูลทั้งหมด
+    // --- 2. Real-time Data Sync ---
     db.ref().on("value", (snapshot) => {
         const data = snapshot.val();
         if(!data) return;
 
-        // ความชื้น
+        // อัปเดตความชื้น
         document.getElementById("moisture").innerText = data.moisture || 0;
-        
-        // แสง LDR
+
+        // อัปเดตสถานะแสง (LDR) - แจ้งผลอย่างเดียว
         const lCard = document.getElementById("light-card");
+        const lIcon = document.getElementById("light-icon");
+        const lText = document.getElementById("light-text");
         if(data.isDark) {
-            lCard.style.backgroundColor = "#2c3e50";
-            document.getElementById("light-icon").innerText = "🌙";
-            document.getElementById("light-text").innerText = "กลางคืน (มืด)";
+            lCard.className = "card night-mode";
+            lIcon.innerText = "🌙";
+            lText.innerText = "กลางคืน";
         } else {
-            lCard.style.backgroundColor = "#f1c40f";
-            document.getElementById("light-icon").innerText = "☀️";
-            document.getElementById("light-text").innerText = "กลางวัน (สว่าง)";
+            lCard.className = "card day-mode";
+            lIcon.innerText = "☀️";
+            lText.innerText = "กลางวัน";
         }
 
-        // Water Flow
+        // อัปเดต Water Flow
         document.getElementById("flowRate").innerText = data.flowRate ? data.flowRate.toFixed(2) : "0.0";
         document.getElementById("totalVolume").innerText = data.totalVolume ? data.totalVolume.toFixed(2) : "0.0";
 
-        // สถานะปั๊ม
-        const pBadge = document.getElementById("pump-badge");
+        // อัปเดตสถานะปั๊ม
+        const pCard = document.getElementById("pump-card");
         const pStatus = document.getElementById("p-status");
         if(data.pumpStatus) {
-            pBadge.className = "card pump-on";
-            pStatus.innerText = "กำลังทำงาน...";
+            pCard.className = "card pump-card status-on";
+            pStatus.innerText = "กำลังรดน้ำ...";
+            pStatus.style.color = "var(--success)";
         } else {
-            pBadge.className = "card pump-off";
-            pStatus.innerText = "หยุดทำงาน";
+            pCard.className = "card pump-card status-off";
+            pStatus.innerText = "หยุดการทำงาน";
+            pStatus.style.color = "var(--danger)";
         }
 
-        // โหมด
-        const mode = data.mode || "auto";
-        document.getElementById("mode-text").innerText = mode === "auto" ? "อัตโนมัติ" : "ควบคุมเอง";
-        document.getElementById("manual-controls").style.display = mode === "manual" ? "block" : "none";
-        document.getElementById("btn-auto").className = mode === "auto" ? "btn btn-mode active-mode" : "btn btn-mode";
-        document.getElementById("btn-manual").className = mode === "manual" ? "btn btn-mode active-mode" : "btn btn-mode";
+        // แจ้งเตือน Dry Run (น้ำไม่ไหล)
+        const errorBanner = document.getElementById("error-banner");
+        if(data.dryRunError) {
+            errorBanner.style.display = "block";
+            pStatus.innerText = "ระบบล็อค (น้ำหมด!)";
+        } else {
+            errorBanner.style.display = "none";
+        }
+
+        // จัดการหน้าตาปุ่มโหมด
+        const mode = data.mode || 'auto';
+        document.getElementById("btn-auto").className = mode === 'auto' ? "btn btn-mode active" : "btn btn-mode";
+        document.getElementById("btn-manual").className = mode === 'manual' ? "btn btn-mode active" : "btn btn-mode";
+        document.getElementById("manual-controls").style.display = mode === 'manual' ? "block" : "none";
     });
 
+    // --- 3. Control Functions ---
     function setMode(m) { db.ref("mode").set(m); }
     function controlPump(s) { db.ref("pumpStatus").set(s); }
+
 </script>
 </body>
 </html>
